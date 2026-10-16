@@ -59,9 +59,14 @@ shows firmware `01.49` on both sides and:
   section). Put the buds in the case to see it report.
 - **Daily controls:** upstream exposes Touch Tone, Low Battery Prompt and Dual
   Connections toggles for this model. Dual Connections is wired into this app's
-  `DAILY_CONTROLS` (`src/domain.rs`) and shows in the Controls tab; Touch Tone
-  and Low Battery Prompt are still not listed, so wiring those two in is the
-  obvious next step.
+  `DAILY_CONTROLS` (`src/domain.rs`) and shows in the Controls tab, together
+  with the remembered-host list (`DualConnectionsDevices`): per-host connected
+  checkboxes (writes the desired connected set, max 2 — the buds' limit) and
+  Forget buttons (sends the buds' forget command). Touch Tone and Low Battery
+  Prompt are still not listed; wiring those two toggles in is the obvious next
+  step. Note the app deliberately has no "route audio to X" picker: multipoint
+  routing is decided by the buds (calls first, otherwise last-active), and no
+  Soundcore client can override that.
 
 ## Case battery 0xFF (bug found live, fixed in our OpenSCQ30 fork)
 

@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use openscq30_i18n::Translate;
-use openscq30_lib::settings::{Setting, SettingId, Value};
+use openscq30_lib::settings::{MultiSelectWithRemoveCommand, Setting, SettingId, Value};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum ListeningMode {
@@ -15,6 +15,13 @@ pub enum ListeningMode {
 pub struct SelectOption {
     pub value: String,
     pub label: String,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct MultiSelectOption {
+    pub value: String,
+    pub label: String,
+    pub selected: bool,
 }
 
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -33,6 +40,10 @@ pub enum ControlValue {
         value: Option<String>,
         options: Vec<SelectOption>,
         optional: bool,
+    },
+    MultiSelect {
+        options: Vec<MultiSelectOption>,
+        removable: bool,
     },
 }
 
@@ -72,6 +83,18 @@ pub enum DeviceCommand {
         value: Option<String>,
         optional: bool,
     },
+    /// Replace the selected values of a multi-select (e.g. which remembered
+    /// dual-connection hosts should be connected).
+    SetMultiSelect {
+        id: SettingId,
+        values: Vec<String>,
+    },
+    /// Remove one option from a multi-select with remove (e.g. forget a
+    /// dual-connection host).
+    RemoveMultiSelectOption {
+        id: SettingId,
+        value: String,
+    },
 }
 
 pub fn setting_changes(command: DeviceCommand) -> Vec<(SettingId, Value)> {
@@ -90,6 +113,16 @@ pub fn setting_changes(command: DeviceCommand) -> Vec<(SettingId, Value)> {
             vec![(SettingId::VolumeAdjustments, Value::I16Vec(gains))]
         }
         DeviceCommand::SetToggle(id, value) => vec![(id, Value::Bool(value))],
+        DeviceCommand::SetMultiSelect { id, values } => vec![(
+            id,
+            Value::StringVec(values.into_iter().map(Cow::Owned).collect()),
+        )],
+        DeviceCommand::RemoveMultiSelectOption { id, value } => vec![(
+            id,
+            Value::MultiSelectWithRemoveCommand(MultiSelectWithRemoveCommand::Remove(Cow::Owned(
+                value,
+            ))),
+        )],
         DeviceCommand::SetSelect {
             id,
             value,
@@ -141,6 +174,7 @@ const DAILY_CONTROLS: &[SettingId] = &[
     SettingId::Ldac,
     SettingId::SoundLeakCompensation,
     SettingId::DualConnections,
+    SettingId::DualConnectionsDevices,
 ];
 
 const BUTTON_CONTROLS: &[SettingId] = &[
@@ -190,6 +224,14 @@ fn control_value(setting: Setting) -> Option<ControlValue> {
             value: value.map(Cow::into_owned),
             options: select_options(setting),
             optional: true,
+        }),
+        Setting::MultiSelect { setting, values } => Some(ControlValue::MultiSelect {
+            options: multi_select_options(setting, &values),
+            removable: false,
+        }),
+        Setting::MultiSelectWithRemove { setting, values } => Some(ControlValue::MultiSelect {
+            options: multi_select_options(setting, &values),
+            removable: true,
         }),
         _ => None,
     }
@@ -326,6 +368,30 @@ fn select_options(setting: openscq30_lib::settings::Select) -> Vec<SelectOption>
                 .cloned()
                 .unwrap_or_else(|| value.to_string()),
             value: value.into_owned(),
+        })
+        .collect()
+}
+
+fn multi_select_options(
+    setting: openscq30_lib::settings::Select,
+    values: &[Cow<'_, str>],
+) -> Vec<MultiSelectOption> {
+    let selected: std::collections::HashSet<&str> = values.iter().map(AsRef::as_ref).collect();
+    setting
+        .options
+        .into_iter()
+        .enumerate()
+        .map(|(index, value)| {
+            let selected = selected.contains(value.as_ref());
+            MultiSelectOption {
+                label: setting
+                    .localized_options
+                    .get(index)
+                    .cloned()
+                    .unwrap_or_else(|| value.to_string()),
+                value: value.into_owned(),
+                selected,
+            }
         })
         .collect()
 }

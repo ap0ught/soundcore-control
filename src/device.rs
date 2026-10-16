@@ -318,6 +318,8 @@ fn read_snapshot(device: &dyn OpenSCQ30Device) -> DeviceSnapshot {
         SettingId::ManualTransparency,
         SettingId::PresetEqualizerProfile,
         SettingId::CustomEqualizerProfile,
+        SettingId::DualConnections,
+        SettingId::DualConnectionsDevices,
     ] {
         tracing::debug!(?setting_id, setting = ?device.setting(&setting_id), "device setting");
     }

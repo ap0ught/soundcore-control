@@ -3,8 +3,8 @@ use std::{borrow::Cow, collections::HashMap};
 use openscq30_lib::settings::{Equalizer, Range, Select, Setting, SettingId, Value};
 use pretty_assertions::assert_eq;
 use soundcore_control::domain::{
-    ControlValue, DeviceCommand, ListeningMode, listening_mode_value, setting_changes,
-    snapshot_from_settings,
+    ControlValue, DeviceCommand, ListeningMode, MultiSelectOption, listening_mode_value,
+    setting_changes, snapshot_from_settings,
 };
 
 fn battery_value(current: u8, maximum: u8) -> Setting {
@@ -203,6 +203,77 @@ fn dual_connections_toggle_appears_in_daily_controls() {
     assert_eq!(snapshot.daily_controls.len(), 1);
     assert_eq!(snapshot.daily_controls[0].id, SettingId::DualConnections);
     assert_eq!(snapshot.daily_controls[0].value, ControlValue::Toggle(true));
+}
+
+#[test]
+fn dual_connections_devices_map_to_multi_select_control() {
+    let settings = HashMap::from([(
+        SettingId::DualConnectionsDevices,
+        Setting::MultiSelectWithRemove {
+            setting: Select {
+                options: vec![
+                    Cow::Borrowed("AA:BB:CC:DD:EE:FF"),
+                    Cow::Borrowed("11:22:33:44:55:66"),
+                ],
+                localized_options: vec!["Phone".into(), "TV".into()],
+            },
+            values: vec![Cow::Borrowed("AA:BB:CC:DD:EE:FF")],
+        },
+    )]);
+
+    let snapshot = snapshot_from_settings(|id| settings.get(&id).cloned());
+
+    let dual_connections = snapshot
+        .daily_controls
+        .iter()
+        .find(|control| control.id == SettingId::DualConnectionsDevices)
+        .expect("dual connections devices should be a daily control");
+    assert_eq!(
+        dual_connections.value,
+        ControlValue::MultiSelect {
+            options: vec![
+                MultiSelectOption {
+                    value: "AA:BB:CC:DD:EE:FF".into(),
+                    label: "Phone".into(),
+                    selected: true,
+                },
+                MultiSelectOption {
+                    value: "11:22:33:44:55:66".into(),
+                    label: "TV".into(),
+                    selected: false,
+                },
+            ],
+            removable: true,
+        }
+    );
+}
+
+#[test]
+fn multi_select_commands_map_to_protocol_setting_changes() {
+    assert_eq!(
+        setting_changes(DeviceCommand::SetMultiSelect {
+            id: SettingId::DualConnectionsDevices,
+            values: vec!["AA:BB:CC:DD:EE:FF".into()],
+        }),
+        vec![(
+            SettingId::DualConnectionsDevices,
+            Value::StringVec(vec![Cow::Borrowed("AA:BB:CC:DD:EE:FF")]),
+        )]
+    );
+    assert_eq!(
+        setting_changes(DeviceCommand::RemoveMultiSelectOption {
+            id: SettingId::DualConnectionsDevices,
+            value: "11:22:33:44:55:66".into(),
+        }),
+        vec![(
+            SettingId::DualConnectionsDevices,
+            Value::MultiSelectWithRemoveCommand(
+                openscq30_lib::settings::MultiSelectWithRemoveCommand::Remove(Cow::Borrowed(
+                    "11:22:33:44:55:66",
+                )),
+            ),
+        )]
+    );
 }
 
 #[test]
