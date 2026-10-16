@@ -4,9 +4,11 @@
 # (see https://github.com/Oppzippy/OpenSCQ30/blob/549e3d721072a5b9a7add90779679e0a27786ee6/lib/src/devices/device_model.rs,
 # the exact revision pinned in Cargo.toml; this file may have moved on later revisions).
 # `bluetooth_name` is matched case-insensitively against the BlueZ-advertised device
-# name. Entries marked "verified" below were confirmed against real hardware; the rest
-# are unverified guesses following the "soundcore <Product>" convention. If your device
-# isn't found, please open an issue with the exact name it advertises.
+# name, and `alt_bluetooth_names` (optional) lists further names the same hardware may
+# report (e.g. before/after BlueZ resolves the remote name). Entries marked "verified"
+# below were confirmed against real hardware; the rest are unverified guesses
+# following the "soundcore <Product>" convention. If your device isn't found, please
+# open an issue with the exact name it advertises.
 # `icon` (optional) names a PNG file in assets/icons/; omit it to fall back to the
 # generic vector-drawn placeholder.
 # `supports_manual_ambient_ranges` must be `true` only for devices confirmed to expose
@@ -52,10 +54,13 @@ supports_manual_ambient_ranges = false
 
 [[device]]
 model = "SoundcoreA3388"
-bluetooth_name = "soundcore AeroClip"
+bluetooth_name = "soundcore AeroClip LE"
+# Discovery scans may show the buds as "soundcore AeroClip" before BlueZ resolves
+# the remote name; accept both.
+alt_bluetooth_names = ["soundcore AeroClip"]
 display_name = "AeroClip"
 icon = "aeroclip.png"
-# Verified against real hardware (BlueZ-advertised name "soundcore AeroClip").
-# Open-ear buds with no ANC: no AmbientSoundMode/ManualNoiseCanceling/ManualTransparency
-# settings, so the ambient tab stays hidden and no startup level repair runs.
+# Verified against real hardware. Open-ear buds with no ANC: no
+# AmbientSoundMode/ManualNoiseCanceling/ManualTransparency settings, so the ambient
+# tab stays hidden and no startup level repair runs.
 supports_manual_ambient_ranges = false

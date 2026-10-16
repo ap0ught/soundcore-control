@@ -10,6 +10,10 @@ pub struct DeviceProfile {
     pub model: DeviceModel,
     /// Matched case-insensitively against the BlueZ-advertised device name.
     pub bluetooth_name: String,
+    /// Extra advertised names the same hardware is known to report, e.g. the
+    /// AeroClip shows up as `soundcore AeroClip` in discovery scans but reports
+    /// `soundcore AeroClip LE` once BlueZ resolves its remote name.
+    pub alt_bluetooth_names: Vec<String>,
     pub display_name: String,
     /// PNG bytes for the in-app illustration, or `None` to fall back to the generic
     /// vector-drawn placeholder.
@@ -33,6 +37,8 @@ struct RawCatalog {
 struct RawDeviceProfile {
     model: String,
     bluetooth_name: String,
+    #[serde(default)]
+    alt_bluetooth_names: Vec<String>,
     display_name: String,
     icon: Option<String>,
     supports_manual_ambient_ranges: bool,
@@ -72,6 +78,7 @@ fn load_device_profiles() -> Vec<DeviceProfile> {
             DeviceProfile {
                 model,
                 bluetooth_name: raw.bluetooth_name,
+                alt_bluetooth_names: raw.alt_bluetooth_names,
                 display_name: raw.display_name,
                 icon,
                 supports_manual_ambient_ranges: raw.supports_manual_ambient_ranges,
@@ -82,7 +89,7 @@ fn load_device_profiles() -> Vec<DeviceProfile> {
 
 /// Picks the descriptor that matches `profile` out of a batch returned by
 /// `OpenSCQ30Session::list_devices`: by MAC address when one is configured, otherwise by
-/// the profile's expected Bluetooth name.
+/// the profile's expected Bluetooth name (or one of its known alternates).
 pub fn find_matching_descriptor(
     descriptors: &[ConnectionDescriptor],
     profile: &DeviceProfile,
@@ -96,11 +103,7 @@ pub fn find_matching_descriptor(
     }
     descriptors
         .iter()
-        .find(|descriptor| {
-            descriptor
-                .name
-                .eq_ignore_ascii_case(&profile.bluetooth_name)
-        })
+        .find(|descriptor| profile.matches_name(&descriptor.name))
         .cloned()
 }
 
@@ -108,7 +111,18 @@ pub fn find_matching_descriptor(
 pub fn matches_known_profile(name: &str) -> bool {
     DEVICE_PROFILES
         .iter()
-        .any(|profile| name.eq_ignore_ascii_case(&profile.bluetooth_name))
+        .any(|profile| profile.matches_name(name))
+}
+
+impl DeviceProfile {
+    /// Whether `name` is this profile's Bluetooth name or one of its known alternates.
+    fn matches_name(&self, name: &str) -> bool {
+        name.eq_ignore_ascii_case(&self.bluetooth_name)
+            || self
+                .alt_bluetooth_names
+                .iter()
+                .any(|alt| name.eq_ignore_ascii_case(alt))
+    }
 }
 
 #[cfg(test)]
@@ -161,8 +175,27 @@ mod tests {
             assert!(matches_known_profile(
                 &profile.bluetooth_name.to_uppercase()
             ));
+            for alt in profile.alt_bluetooth_names.iter() {
+                assert!(matches_known_profile(alt));
+            }
         }
         assert!(!matches_known_profile("totally unrelated device"));
+    }
+
+    #[test]
+    fn matches_alternate_bluetooth_name() {
+        let profile = DEVICE_PROFILES
+            .iter()
+            .find(|profile| !profile.alt_bluetooth_names.is_empty())
+            .expect("at least one profile should declare alternate names");
+        let descriptors = vec![
+            descriptor(&profile.alt_bluetooth_names[0], "AA:BB:CC:DD:EE:FF"),
+            descriptor("unrelated device", "11:22:33:44:55:66"),
+        ];
+
+        let found = find_matching_descriptor(&descriptors, profile, None);
+
+        assert_eq!(found, Some(descriptors[0].clone()));
     }
 
     #[test]
