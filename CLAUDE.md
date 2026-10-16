@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Soundcore Control (`soundcore-control`, formerly Liberty Control) is a native Linux desktop controller for Soundcore earbuds and headphones. It talks to paired devices over BlueZ via a pinned fork of `openscq30-lib`, and presents an `egui`/`eframe` GUI plus a system tray (`ksni`, StatusNotifierItem).
 
-Supported models are data, not code: `assets/devices.toml` lists each device's Bluetooth-advertised name, its `openscq30_lib::DeviceModel`, an optional icon filename (resolved from `assets/icons/` via `rust-embed`), and whether it exposes manual noise-canceling/transparency ranges (`supports_manual_ambient_ranges`) vs. discrete modes only. `src/devices.rs` parses this into `DEVICE_PROFILES` at startup. Extending device support means adding a TOML entry (and optionally a PNG), not editing Rust.
+Supported models are data, not code: `assets/devices.toml` lists each device's Bluetooth-advertised name (plus optional `alt_bluetooth_names` for hardware that reports different names before/after BlueZ resolves the remote name, e.g. the AeroClip), its `openscq30_lib::DeviceModel`, an optional icon filename (resolved from `assets/icons/` via `rust-embed`), and whether it exposes manual noise-canceling/transparency ranges (`supports_manual_ambient_ranges`) vs. discrete modes only. `src/devices.rs` parses this into `DEVICE_PROFILES` at startup. Extending device support means adding a TOML entry (and optionally a PNG), not editing Rust. Devices with no ambient options at all (no ANC hardware) get no Ambient tab (`domain::has_ambient_options`) and no tray ambient menu (`TrayState::has_ambient_options`); see `docs/aeroclip.md` for the full case study.
 
 ## Commands
 
@@ -51,4 +51,4 @@ Binary-only modules (declared via `mod app; mod ui;` in `main.rs`, not part of t
 
 Cross-cutting pattern: both `device.rs` and `tray.rs` isolate blocking/async work on background threads and communicate with the main egui loop purely through channels; follow this pattern rather than calling into `bluer`/`openscq30-lib` directly from UI code. The device worker thread also wraps its work in `catch_unwind`, since `openscq30-lib` panics rather than erroring for some unsupported per-model setting writes.
 
-`openscq30-lib` is pinned to a specific git revision in `Cargo.toml` (not a published crate version); check that pin before assuming upstream API behavior matches published docs.
+`openscq30-lib` is pinned to a specific git revision in `Cargo.toml` (not a published crate version); check that pin before assuming upstream API behavior matches published docs. The pin currently points at our `ap0ught/OpenSCQ30` fork, one commit ahead of upstream master with a case-battery `0xFF` fix (see `docs/aeroclip.md`).

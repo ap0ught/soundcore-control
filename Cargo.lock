@@ -2507,12 +2507,12 @@ checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 [[package]]
 name = "openscq30-i18n"
 version = "2.13.0"
-source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=549e3d721072a5b9a7add90779679e0a27786ee6#549e3d721072a5b9a7add90779679e0a27786ee6"
+source = "git+https://github.com/ap0ught/OpenSCQ30.git?rev=e1f09945df8e0b138ff2326308b5cfd20425f0d8#e1f09945df8e0b138ff2326308b5cfd20425f0d8"
 
 [[package]]
 name = "openscq30-i18n-macros"
 version = "2.13.0"
-source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=549e3d721072a5b9a7add90779679e0a27786ee6#549e3d721072a5b9a7add90779679e0a27786ee6"
+source = "git+https://github.com/ap0ught/OpenSCQ30.git?rev=e1f09945df8e0b138ff2326308b5cfd20425f0d8#e1f09945df8e0b138ff2326308b5cfd20425f0d8"
 dependencies = [
  "heck",
  "openscq30-i18n",
@@ -2524,7 +2524,7 @@ dependencies = [
 [[package]]
 name = "openscq30-lib"
 version = "2.13.0"
-source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=549e3d721072a5b9a7add90779679e0a27786ee6#549e3d721072a5b9a7add90779679e0a27786ee6"
+source = "git+https://github.com/ap0ught/OpenSCQ30.git?rev=e1f09945df8e0b138ff2326308b5cfd20425f0d8#e1f09945df8e0b138ff2326308b5cfd20425f0d8"
 dependencies = [
  "async-trait",
  "bitflags 2.13.1",
@@ -2560,12 +2560,12 @@ dependencies = [
 [[package]]
 name = "openscq30-lib-has"
 version = "2.13.0"
-source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=549e3d721072a5b9a7add90779679e0a27786ee6#549e3d721072a5b9a7add90779679e0a27786ee6"
+source = "git+https://github.com/ap0ught/OpenSCQ30.git?rev=e1f09945df8e0b138ff2326308b5cfd20425f0d8#e1f09945df8e0b138ff2326308b5cfd20425f0d8"
 
 [[package]]
 name = "openscq30-lib-macros"
 version = "2.13.0"
-source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=549e3d721072a5b9a7add90779679e0a27786ee6#549e3d721072a5b9a7add90779679e0a27786ee6"
+source = "git+https://github.com/ap0ught/OpenSCQ30.git?rev=e1f09945df8e0b138ff2326308b5cfd20425f0d8#e1f09945df8e0b138ff2326308b5cfd20425f0d8"
 dependencies = [
  "heck",
  "itertools",

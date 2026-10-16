@@ -29,8 +29,13 @@ ksni = "0.3.5"
 libc = "0.2"
 macaddr = "1"
 notify-rust = "4"
-openscq30-i18n = { git = "https://github.com/Oppzippy/OpenSCQ30.git", rev = "549e3d721072a5b9a7add90779679e0a27786ee6" }
-openscq30-lib = { git = "https://github.com/Oppzippy/OpenSCQ30.git", rev = "549e3d721072a5b9a7add90779679e0a27786ee6" }
+# Pinned to our OpenSCQ30 fork, which carries one fix on top of upstream master:
+# "fix(lib): return no case battery setting when level is 0xFF" (branch
+# fix/case-battery-255-unavailable). Without it, reading the case battery while
+# the buds are out of the case panics in debug builds. Drop back to
+# https://github.com/Oppzippy/OpenSCQ30.git once the fix lands upstream.
+openscq30-i18n = { git = "https://github.com/ap0ught/OpenSCQ30.git", rev = "e1f09945df8e0b138ff2326308b5cfd20425f0d8" }
+openscq30-lib = { git = "https://github.com/ap0ught/OpenSCQ30.git", rev = "e1f09945df8e0b138ff2326308b5cfd20425f0d8" }
 rust-embed = "8"
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync"] }
