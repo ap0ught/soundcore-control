@@ -3,7 +3,8 @@ use std::{borrow::Cow, collections::HashMap};
 use openscq30_lib::settings::{Equalizer, Range, Select, Setting, SettingId, Value};
 use pretty_assertions::assert_eq;
 use soundcore_control::domain::{
-    DeviceCommand, ListeningMode, listening_mode_value, setting_changes, snapshot_from_settings,
+    ControlValue, DeviceCommand, ListeningMode, listening_mode_value, setting_changes,
+    snapshot_from_settings,
 };
 
 fn battery_value(current: u8, maximum: u8) -> Setting {
@@ -191,6 +192,17 @@ fn extracts_daily_and_button_controls() {
     assert_eq!(snapshot.daily_controls[0].label, "Easy Chat");
     assert_eq!(snapshot.button_controls.len(), 1);
     assert_eq!(snapshot.button_controls[0].label, "Left Single Press");
+}
+
+#[test]
+fn dual_connections_toggle_appears_in_daily_controls() {
+    let settings = HashMap::from([(SettingId::DualConnections, Setting::Toggle { value: true })]);
+
+    let snapshot = snapshot_from_settings(|id| settings.get(&id).cloned());
+
+    assert_eq!(snapshot.daily_controls.len(), 1);
+    assert_eq!(snapshot.daily_controls[0].id, SettingId::DualConnections);
+    assert_eq!(snapshot.daily_controls[0].value, ControlValue::Toggle(true));
 }
 
 #[test]

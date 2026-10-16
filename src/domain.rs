@@ -140,6 +140,7 @@ const DAILY_CONTROLS: &[SettingId] = &[
     SettingId::AutoPowerOff,
     SettingId::Ldac,
     SettingId::SoundLeakCompensation,
+    SettingId::DualConnections,
 ];
 
 const BUTTON_CONTROLS: &[SettingId] = &[

@@ -58,9 +58,10 @@ shows firmware `01.49` on both sides and:
   BlueZ). Case level reads `—` while the buds are out of the case (next
   section). Put the buds in the case to see it report.
 - **Daily controls:** upstream exposes Touch Tone, Low Battery Prompt and Dual
-  Connections toggles for this model, but they are not in this app's
-  `DAILY_CONTROLS` list (`src/domain.rs`), so the Controls tab currently shows
-  buttons only. Wiring those three in is the obvious next step.
+  Connections toggles for this model. Dual Connections is wired into this app's
+  `DAILY_CONTROLS` (`src/domain.rs`) and shows in the Controls tab; Touch Tone
+  and Low Battery Prompt are still not listed, so wiring those two in is the
+  obvious next step.
 
 ## Case battery 0xFF (bug found live, fixed in our OpenSCQ30 fork)
 
