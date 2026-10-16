@@ -27,6 +27,10 @@ pub struct TrayState {
     battery_case: Option<u8>,
     battery_single: Option<u8>,
     listening_mode: Option<ListeningMode>,
+    /// Whether the connected device exposes any ambient control (a manual intensity
+    /// range or discrete listening modes). Devices without ANC hardware (e.g. the
+    /// AeroClip) report neither, and must not be offered ambient switching.
+    has_ambient_options: bool,
 }
 
 impl Default for TrayState {
@@ -64,6 +68,7 @@ impl TrayState {
             battery_case: None,
             battery_single: None,
             listening_mode: None,
+            has_ambient_options: false,
         }
     }
 
@@ -76,7 +81,11 @@ impl TrayState {
     }
 
     #[must_use]
-    pub fn connected(device_name: &str, snapshot: &DeviceSnapshot) -> Self {
+    pub fn connected(
+        device_name: &str,
+        snapshot: &DeviceSnapshot,
+        has_ambient_options: bool,
+    ) -> Self {
         Self {
             device_name: Some(device_name.to_owned()),
             status: "Connected".into(),
@@ -85,7 +94,8 @@ impl TrayState {
             battery_right: snapshot.battery_right,
             battery_case: snapshot.battery_case,
             battery_single: snapshot.battery_single,
-            listening_mode: Some(snapshot.listening_mode),
+            listening_mode: has_ambient_options.then_some(snapshot.listening_mode),
+            has_ambient_options,
         }
     }
 
@@ -203,6 +213,52 @@ impl SoundcoreTray {
             context.request_repaint();
         }
     }
+
+    /// Ambient-mode switching for devices with ANC hardware. Returns `None` when the
+    /// device reports no ambient options (e.g. the open-ear AeroClip), so the tray
+    /// never offers a mode switch the device can't honor.
+    fn ambient_menu_item(&self) -> Option<ksni::MenuItem<Self>> {
+        if !self.state.has_ambient_options {
+            return None;
+        }
+        let selected_mode = self.state.listening_mode;
+        Some(
+            ksni::menu::SubMenu {
+                label: format!(
+                    "Ambient mode: {}",
+                    selected_mode.map_or("—", listening_mode_label)
+                ),
+                enabled: self.state.connected,
+                submenu: vec![
+                    ksni::menu::RadioGroup {
+                        selected: match selected_mode {
+                            Some(ListeningMode::Transparency) | None => 0,
+                            Some(ListeningMode::Normal) => 1,
+                            Some(ListeningMode::NoiseCanceling) => 2,
+                        },
+                        select: Box::new(|tray: &mut SoundcoreTray, selected| {
+                            let mode = match selected {
+                                0 => ListeningMode::Transparency,
+                                1 => ListeningMode::Normal,
+                                _ => ListeningMode::NoiseCanceling,
+                            };
+                            tray.send_action(TrayAction::SetListeningMode(mode));
+                        }),
+                        options: ["Transparency", "Normal", "Noise Canceling"]
+                            .into_iter()
+                            .map(|label| ksni::menu::RadioItem {
+                                label: label.into(),
+                                ..Default::default()
+                            })
+                            .collect(),
+                    }
+                    .into(),
+                ],
+                ..Default::default()
+            }
+            .into(),
+        )
+    }
 }
 
 impl ksni::Tray for SoundcoreTray {
@@ -248,8 +304,7 @@ impl ksni::Tray for SoundcoreTray {
     fn menu(&self) -> Vec<ksni::MenuItem<Self>> {
         use ksni::menu::MenuItem;
 
-        let selected_mode = self.state.listening_mode;
-        vec![
+        let mut menu = vec![
             StandardItem {
                 label: "Open Soundcore Control".into(),
                 activate: Box::new(|tray: &mut SoundcoreTray| {
@@ -266,41 +321,12 @@ impl ksni::Tray for SoundcoreTray {
             )),
             info_item(self.state.battery_summary()),
             MenuItem::Separator,
-            ksni::menu::SubMenu {
-                label: format!(
-                    "Ambient mode: {}",
-                    selected_mode.map_or("—", listening_mode_label)
-                ),
-                enabled: self.state.connected,
-                submenu: vec![
-                    ksni::menu::RadioGroup {
-                        selected: match selected_mode {
-                            Some(ListeningMode::Transparency) | None => 0,
-                            Some(ListeningMode::Normal) => 1,
-                            Some(ListeningMode::NoiseCanceling) => 2,
-                        },
-                        select: Box::new(|tray: &mut SoundcoreTray, selected| {
-                            let mode = match selected {
-                                0 => ListeningMode::Transparency,
-                                1 => ListeningMode::Normal,
-                                _ => ListeningMode::NoiseCanceling,
-                            };
-                            tray.send_action(TrayAction::SetListeningMode(mode));
-                        }),
-                        options: ["Transparency", "Normal", "Noise Canceling"]
-                            .into_iter()
-                            .map(|label| ksni::menu::RadioItem {
-                                label: label.into(),
-                                ..Default::default()
-                            })
-                            .collect(),
-                    }
-                    .into(),
-                ],
-                ..Default::default()
-            }
-            .into(),
-            MenuItem::Separator,
+        ];
+        if let Some(ambient) = self.ambient_menu_item() {
+            menu.push(ambient);
+            menu.push(MenuItem::Separator);
+        }
+        menu.extend([
             StandardItem {
                 label: "Disconnect".into(),
                 enabled: self.state.connected,
@@ -319,7 +345,8 @@ impl ksni::Tray for SoundcoreTray {
                 ..Default::default()
             }
             .into(),
-        ]
+        ]);
+        menu
     }
 }
 
@@ -382,11 +409,48 @@ mod tests {
             ..DeviceSnapshot::default()
         };
 
-        let state = TrayState::connected("Test Earbuds", &snapshot);
+        let state = TrayState::connected("Test Earbuds", &snapshot, true);
 
         assert!(state.connected);
+        assert!(state.has_ambient_options);
         assert_eq!(state.device_label(), "Test Earbuds");
         assert_eq!(state.listening_mode, Some(ListeningMode::Normal));
         assert_eq!(battery_value(state.battery_left), "94%");
+    }
+
+    fn tray_with(state: TrayState) -> SoundcoreTray {
+        SoundcoreTray {
+            state,
+            actions: std::sync::mpsc::channel().0,
+            egui_context: None,
+            icons: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn tray_without_ambient_options_hides_listening_mode_and_menu() {
+        let snapshot = DeviceSnapshot {
+            listening_mode: ListeningMode::Normal,
+            ..DeviceSnapshot::default()
+        };
+
+        let state = TrayState::connected("AeroClip", &snapshot, false);
+
+        assert!(!state.has_ambient_options);
+        assert_eq!(state.listening_mode, None);
+        assert!(tray_with(state).ambient_menu_item().is_none());
+    }
+
+    #[test]
+    fn tray_with_ambient_options_offers_ambient_menu() {
+        let snapshot = DeviceSnapshot {
+            listening_mode: ListeningMode::Normal,
+            ..DeviceSnapshot::default()
+        };
+
+        let state = TrayState::connected("Test Earbuds", &snapshot, true);
+
+        assert_eq!(state.listening_mode, Some(ListeningMode::Normal));
+        assert!(tray_with(state).ambient_menu_item().is_some());
     }
 }

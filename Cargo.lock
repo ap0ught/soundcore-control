@@ -2506,13 +2506,13 @@ checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
 name = "openscq30-i18n"
-version = "2.11.0"
-source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=08b28dd8ce8c9f91c3ef44ad25c9d5f3491a2aa0#08b28dd8ce8c9f91c3ef44ad25c9d5f3491a2aa0"
+version = "2.13.0"
+source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=549e3d721072a5b9a7add90779679e0a27786ee6#549e3d721072a5b9a7add90779679e0a27786ee6"
 
 [[package]]
 name = "openscq30-i18n-macros"
-version = "2.11.0"
-source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=08b28dd8ce8c9f91c3ef44ad25c9d5f3491a2aa0#08b28dd8ce8c9f91c3ef44ad25c9d5f3491a2aa0"
+version = "2.13.0"
+source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=549e3d721072a5b9a7add90779679e0a27786ee6#549e3d721072a5b9a7add90779679e0a27786ee6"
 dependencies = [
  "heck",
  "openscq30-i18n",
@@ -2523,10 +2523,11 @@ dependencies = [
 
 [[package]]
 name = "openscq30-lib"
-version = "2.11.0"
-source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=08b28dd8ce8c9f91c3ef44ad25c9d5f3491a2aa0#08b28dd8ce8c9f91c3ef44ad25c9d5f3491a2aa0"
+version = "2.13.0"
+source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=549e3d721072a5b9a7add90779679e0a27786ee6#549e3d721072a5b9a7add90779679e0a27786ee6"
 dependencies = [
  "async-trait",
+ "bitflags 2.13.1",
  "bluer",
  "futures",
  "hex",
@@ -2558,13 +2559,13 @@ dependencies = [
 
 [[package]]
 name = "openscq30-lib-has"
-version = "2.11.0"
-source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=08b28dd8ce8c9f91c3ef44ad25c9d5f3491a2aa0#08b28dd8ce8c9f91c3ef44ad25c9d5f3491a2aa0"
+version = "2.13.0"
+source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=549e3d721072a5b9a7add90779679e0a27786ee6#549e3d721072a5b9a7add90779679e0a27786ee6"
 
 [[package]]
 name = "openscq30-lib-macros"
-version = "2.11.0"
-source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=08b28dd8ce8c9f91c3ef44ad25c9d5f3491a2aa0#08b28dd8ce8c9f91c3ef44ad25c9d5f3491a2aa0"
+version = "2.13.0"
+source = "git+https://github.com/Oppzippy/OpenSCQ30.git?rev=549e3d721072a5b9a7add90779679e0a27786ee6#549e3d721072a5b9a7add90779679e0a27786ee6"
 dependencies = [
  "heck",
  "itertools",

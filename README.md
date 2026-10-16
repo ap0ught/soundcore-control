@@ -22,7 +22,7 @@
 Soundcore Control brings the most useful Soundcore mobile-app controls to a responsive desktop interface. It talks directly to paired devices through BlueZ and [OpenSCQ30](https://github.com/Oppzippy/OpenSCQ30)'s Soundcore protocol implementation.
 
 > [!IMPORTANT]
-> Soundcore Control currently targets **Liberty 4 Pro** (verified), plus **R60i NC**, **P20i/P25i/R50i**, **Life Q30**, and **Space One Pro**. Support for the latter four is new and their Bluetooth device names are best-effort guesses. If your device isn't found, please open an issue with the exact name it advertises.
+> Soundcore Control currently targets **Liberty 4 Pro** (verified), **R60i NC**, and **AeroClip** (Bluetooth name verified against real hardware; open-ear buds with no ANC, so the ambient tab is hidden), plus **P20i/P25i/R50i**, **Life Q30**, and **Space One Pro**. Support for the latter three is new and their Bluetooth device names are best-effort guesses. If your device isn't found, please open an issue with the exact name it advertises.
 
 ## Features
 

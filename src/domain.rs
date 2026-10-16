@@ -194,6 +194,17 @@ fn control_value(setting: Setting) -> Option<ControlValue> {
     }
 }
 
+/// Whether a device reports anything ambient-related: either a manual intensity
+/// range or at least one discrete listening mode. Devices with neither (e.g. the
+/// open-ear AeroClip, which has no ANC hardware) get no Ambient tab and no tray
+/// ambient menu.
+pub fn has_ambient_options(
+    supports_manual_ambient_ranges: bool,
+    snapshot: &DeviceSnapshot,
+) -> bool {
+    supports_manual_ambient_ranges || !snapshot.mode_options.is_empty()
+}
+
 pub fn snapshot_from_settings(setting: impl Fn(SettingId) -> Option<Setting>) -> DeviceSnapshot {
     let (listening_mode, mode_options) = setting(SettingId::AmbientSoundMode)
         .and_then(select_value_and_options)

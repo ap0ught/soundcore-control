@@ -1,12 +1,12 @@
 # Every Soundcore model this app knows how to drive.
 #
 # `model` must match a variant name from openscq30-lib's `DeviceModel` enum exactly
-# (see https://github.com/Oppzippy/OpenSCQ30/blob/08b28dd8ce8c9f91c3ef44ad25c9d5f3491a2aa0/lib/src/devices/device_model.rs,
+# (see https://github.com/Oppzippy/OpenSCQ30/blob/549e3d721072a5b9a7add90779679e0a27786ee6/lib/src/devices/device_model.rs,
 # the exact revision pinned in Cargo.toml; this file may have moved on later revisions).
 # `bluetooth_name` is matched case-insensitively against the BlueZ-advertised device
-# name, and for every entry besides Liberty 4 Pro and R60i NC it is an unverified guess
-# following the "soundcore <Product>" convention; confirm on real hardware before
-# trusting it.
+# name. Entries marked "verified" below were confirmed against real hardware; the rest
+# are unverified guesses following the "soundcore <Product>" convention. If your device
+# isn't found, please open an issue with the exact name it advertises.
 # `icon` (optional) names a PNG file in assets/icons/; omit it to fall back to the
 # generic vector-drawn placeholder.
 # `supports_manual_ambient_ranges` must be `true` only for devices confirmed to expose
@@ -48,4 +48,14 @@ model = "SoundcoreA3062"
 bluetooth_name = "soundcore Space One Pro"
 display_name = "Space One Pro"
 icon = "spaceonepro.png"
+supports_manual_ambient_ranges = false
+
+[[device]]
+model = "SoundcoreA3388"
+bluetooth_name = "soundcore AeroClip"
+display_name = "AeroClip"
+icon = "aeroclip.png"
+# Verified against real hardware (BlueZ-advertised name "soundcore AeroClip").
+# Open-ear buds with no ANC: no AmbientSoundMode/ManualNoiseCanceling/ManualTransparency
+# settings, so the ambient tab stays hidden and no startup level repair runs.
 supports_manual_ambient_ranges = false

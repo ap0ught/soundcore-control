@@ -29,8 +29,8 @@ ksni = "0.3.5"
 libc = "0.2"
 macaddr = "1"
 notify-rust = "4"
-openscq30-i18n = { git = "https://github.com/Oppzippy/OpenSCQ30.git", rev = "08b28dd8ce8c9f91c3ef44ad25c9d5f3491a2aa0" }
-openscq30-lib = { git = "https://github.com/Oppzippy/OpenSCQ30.git", rev = "08b28dd8ce8c9f91c3ef44ad25c9d5f3491a2aa0" }
+openscq30-i18n = { git = "https://github.com/Oppzippy/OpenSCQ30.git", rev = "549e3d721072a5b9a7add90779679e0a27786ee6" }
+openscq30-lib = { git = "https://github.com/Oppzippy/OpenSCQ30.git", rev = "549e3d721072a5b9a7add90779679e0a27786ee6" }
 rust-embed = "8"
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync"] }
